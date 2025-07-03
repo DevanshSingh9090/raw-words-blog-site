@@ -33,14 +33,27 @@ app.use("/api/blog", BlogRoute);
 app.use("/api/comment", CommentRouote);
 app.use("/api/blog-like", BlogLikeRoute);
 
+// mongoose
+//   .connect(process.env.MONGODB_CONN, { dbName: "raw-words-db" })
+//   .then(() => console.log("Database connected."))
+//   .catch((err) => console.log("Database connection failed.", err));
+
+// app.listen(PORT, () => {
+//   console.log("Server running on port:", PORT);
+// });
+
 mongoose
   .connect(process.env.MONGODB_CONN, { dbName: "raw-words-db" })
-  .then(() => console.log("Database connected."))
-  .catch((err) => console.log("Database connection failed.", err));
-
-app.listen(PORT, () => {
-  console.log("Server running on port:", PORT);
-});
+  .then(() => {
+    console.log("Database connected.");
+    app.listen(PORT, () => {
+      console.log(`Server running on port: ${PORT}`);
+    });
+  })
+  .catch((err) => {
+    console.error("Database connection failed:", err.message);
+    process.exit(1);
+  });
 
 app.use((err, req, res, next) => {
   const statusCode = err.statusCode || 500;
