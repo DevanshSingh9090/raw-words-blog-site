@@ -3,6 +3,14 @@ import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 
+// === Helper for cookie options ===
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
+};
+
 export const Register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
@@ -66,12 +74,7 @@ export const Login = async (req, res, next) => {
       process.env.JWT_SECRET
     );
 
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      path: "/",
-    });
+    res.cookie("access_token", token, cookieOptions);
 
     const newUser = user.toObject({ getters: true });
     delete newUser.password;
@@ -119,12 +122,7 @@ export const GoogleLogin = async (req, res, next) => {
       process.env.JWT_SECRET
     );
 
-    res.cookie("access_token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      path: "/",
-    });
+    res.cookie("access_token", token, cookieOptions);
 
     const newUser = user.toObject({ getters: true });
     delete newUser.password;
@@ -140,12 +138,7 @@ export const GoogleLogin = async (req, res, next) => {
 
 export const Logout = async (req, res, next) => {
   try {
-    res.clearCookie("access_token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
-      path: "/",
-    });
+    res.clearCookie("access_token", cookieOptions);
 
     res.status(200).json({
       success: true,
