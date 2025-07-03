@@ -2,16 +2,22 @@ import { handleError } from "../helpers/handleError.js";
 import User from "../models/user.model.js";
 import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
+
 export const Register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return next(handleError(400, "Name, email and password are required."));
+    }
+
     const checkuser = await User.findOne({ email });
     if (checkuser) {
       // user already registered
-      next(handleError(409, "User already registered."));
+      return next(handleError(409, "User already registered."));
     }
 
-    const hashedPassword = bcryptjs.hashSync(password);
+    const hashedPassword = await bcryptjs.hash(password, 10);
     // register user
     const user = new User({
       name,
@@ -83,12 +89,16 @@ export const Login = async (req, res, next) => {
 export const GoogleLogin = async (req, res, next) => {
   try {
     const { name, email, avatar } = req.body;
-    let user;
-    user = await User.findOne({ email });
+
+    if (!name || !email) {
+      return next(handleError(400, "Missing name or email."));
+    }
+
+    let user = await User.findOne({ email });
     if (!user) {
       //  create new user
-      const password = Math.random().toString();
-      const hashedPassword = bcryptjs.hashSync(password);
+      const password = Math.random().toString().slice(-8);
+      const hashedPassword = await bcryptjs.hash(password, 10);
       const newUser = new User({
         name,
         email,
