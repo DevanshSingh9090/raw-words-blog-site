@@ -7,16 +7,18 @@ export const getUser = async (req, res, next) => {
   try {
     const { userid } = req.params;
     const user = await User.findOne({ _id: userid }).lean().exec();
+
     if (!user) {
-      next(handleError(404, "User not found."));
+      return next(handleError(404, "User not found."));
     }
+
     res.status(200).json({
       success: true,
       message: "User data found.",
       user,
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
 
@@ -26,27 +28,31 @@ export const updateUser = async (req, res, next) => {
     const { userid } = req.params;
 
     const user = await User.findById(userid);
-    user.name = data.name;
-    user.email = data.email;
-    user.bio = data.bio;
+
+    if (!user) {
+      return next(handleError(404, "User not found."));
+    }
+
+    user.name = data.name || user.name;
+    user.email = data.email || user.email;
+    user.bio = data.bio || user.bio;
 
     if (data.password && data.password.length >= 8) {
-      const hashedPassword = bcryptjs.hashSync(data.password);
+      const hashedPassword = bcryptjs.hashSync(data.password, 10);
       user.password = hashedPassword;
     }
 
     if (req.file) {
-      // Upload an image
-      const uploadResult = await cloudinary.uploader
-        .upload(req.file.path, {
+      try {
+        const uploadResult = await cloudinary.uploader.upload(req.file.path, {
           folder: "raw-words-db",
           resource_type: "auto",
-        })
-        .catch((error) => {
-          next(handleError(500, error.message));
         });
 
-      user.avatar = uploadResult.secure_url;
+        user.avatar = uploadResult.secure_url;
+      } catch (cloudError) {
+        return next(handleError(500, cloudError.message));
+      }
     }
 
     await user.save();
@@ -59,30 +65,42 @@ export const updateUser = async (req, res, next) => {
       user: newUser,
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
 
 export const getAllUser = async (req, res, next) => {
   try {
-    const user = await User.find().sort({ createdAt: -1 });
+    const users = await User.find().sort({ createdAt: -1 }).lean();
+
+    const sanitizedUsers = users.map((user) => ({
+      ...user,
+      avatar: user.avatar || "",
+    }));
+
     res.status(200).json({
       success: true,
-      user,
+      user: sanitizedUsers,
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
+
 export const deleteUser = async (req, res, next) => {
   try {
     const { id } = req.params;
     const user = await User.findByIdAndDelete(id);
+
+    if (!user) {
+      return next(handleError(404, "User not found."));
+    }
+
     res.status(200).json({
       success: true,
-      message: "Data deleted.",
+      message: "User deleted.",
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };

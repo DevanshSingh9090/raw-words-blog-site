@@ -3,22 +3,22 @@ import { handleError } from "../helpers/handleError.js";
 import Blog from "../models/blog.model.js";
 import { encode } from "entities";
 import Category from "../models/category.model.js";
+
 export const addBlog = async (req, res, next) => {
   try {
     const data = JSON.parse(req.body.data);
     let featuredImage = "";
     if (req.file) {
       // Upload an image
-      const uploadResult = await cloudinary.uploader
-        .upload(req.file.path, {
+      try {
+        const uploadResult = await cloudinary.uploader.upload(req.file.path, {
           folder: "raw-words-db",
           resource_type: "auto",
-        })
-        .catch((error) => {
-          next(handleError(500, error.message));
         });
-
-      featuredImage = uploadResult.secure_url;
+        featuredImage = uploadResult.secure_url;
+      } catch (error) {
+        return next(handleError(500, error.message));
+      }
     }
 
     const blog = new Blog({
@@ -37,29 +37,35 @@ export const addBlog = async (req, res, next) => {
       message: "Blog added successfully.",
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
+
 export const editBlog = async (req, res, next) => {
   try {
     const { blogid } = req.params;
     const blog = await Blog.findById(blogid).populate("category", "name");
     if (!blog) {
-      next(handleError(404, "Data not found."));
+      return next(handleError(404, "Data not found."));
     }
     res.status(200).json({
       blog,
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
+
 export const updateBlog = async (req, res, next) => {
   try {
     const { blogid } = req.params;
     const data = JSON.parse(req.body.data);
 
     const blog = await Blog.findById(blogid);
+
+    if (!blog) {
+      return next(handleError(404, "Blog not found."));
+    }
 
     blog.category = data.category;
     blog.title = data.title;
@@ -69,17 +75,15 @@ export const updateBlog = async (req, res, next) => {
     let featuredImage = blog.featuredImage;
 
     if (req.file) {
-      // Upload an image
-      const uploadResult = await cloudinary.uploader
-        .upload(req.file.path, {
+      try {
+        const uploadResult = await cloudinary.uploader.upload(req.file.path, {
           folder: "raw-words-db",
           resource_type: "auto",
-        })
-        .catch((error) => {
-          next(handleError(500, error.message));
         });
-
-      featuredImage = uploadResult.secure_url;
+        featuredImage = uploadResult.secure_url;
+      } catch (error) {
+        return next(handleError(500, error.message));
+      }
     }
 
     blog.featuredImage = featuredImage;
@@ -91,9 +95,10 @@ export const updateBlog = async (req, res, next) => {
       message: "Blog updated successfully.",
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
+
 export const deleteBlog = async (req, res, next) => {
   try {
     const { blogid } = req.params;
@@ -103,7 +108,7 @@ export const deleteBlog = async (req, res, next) => {
       message: "Blog Deleted successfully.",
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
 export const showAllBlog = async (req, res, next) => {
@@ -129,7 +134,7 @@ export const showAllBlog = async (req, res, next) => {
       blog,
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
 
@@ -145,7 +150,7 @@ export const getBlog = async (req, res, next) => {
       blog,
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
 
@@ -168,7 +173,7 @@ export const getRelatedBlog = async (req, res, next) => {
       relatedBlog,
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
 
@@ -178,7 +183,7 @@ export const getBlogByCategory = async (req, res, next) => {
 
     const categoryData = await Category.findOne({ slug: category });
     if (!categoryData) {
-      return next(404, "Category data not found.");
+      return next(handleError(404, "Category data not found."));
     }
     const categoryId = categoryData._id;
     const blog = await Blog.find({ category: categoryId })
@@ -191,7 +196,7 @@ export const getBlogByCategory = async (req, res, next) => {
       categoryData,
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
 export const search = async (req, res, next) => {
@@ -207,7 +212,7 @@ export const search = async (req, res, next) => {
       blog,
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
 
@@ -224,6 +229,6 @@ export const getAllBlogs = async (req, res, next) => {
       blog,
     });
   } catch (error) {
-    next(handleError(500, error.message));
+    return next(handleError(500, error.message));
   }
 };
