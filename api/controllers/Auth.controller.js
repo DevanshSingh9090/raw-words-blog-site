@@ -4,10 +4,13 @@ import bcryptjs from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 // === Helper for cookie options ===
+// sameSite:"none" + secure:true is required for cross-domain cookies (Chrome/Safari).
+// This applies whenever the API and client are on different origins (e.g. Vercel deployments).
+const isProduction = process.env.NODE_ENV === "production"
 const cookieOptions = {
   httpOnly: true,
-  secure: process.env.NODE_ENV === "production",
-  sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+  secure: isProduction,          // must be true for sameSite:"none"
+  sameSite: isProduction ? "none" : "lax",
   path: "/",
 };
 

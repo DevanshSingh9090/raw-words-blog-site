@@ -1,60 +1,65 @@
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
-import { RouteAddCategory, RouteEditCategory } from "@/helpers/RouteName";
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button"
+import { Card, CardContent } from "@/components/ui/card"
+import React, { useState } from "react"
 import {
   Table,
   TableBody,
-  TableCaption,
   TableCell,
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table";
-import { useFetch } from "@/hooks/useFetch";
-import { getEvn } from "@/helpers/getEnv";
-import Loading from "@/components/Loading";
-import { FiEdit } from "react-icons/fi";
-import { FaRegTrashAlt } from "react-icons/fa";
-import { deleteData } from "@/helpers/handleDelete";
-import { showToast } from "@/helpers/showToast";
-import usericon from "@/assets/images/user.png";
-import moment from "moment";
+} from "@/components/ui/table"
+import { useFetch } from "@/hooks/useFetch"
+import { getEvn } from "@/helpers/getEnv"
+import Loading from "@/components/Loading"
+import { FaRegTrashAlt } from "react-icons/fa"
+import { deleteData } from "@/helpers/handleDelete"
+import { showToast } from "@/helpers/showToast"
+import usericon from "@/assets/images/user.png"
+import moment from "moment"
+import ConfirmDialog from "@/components/ConfirmDialog"
+
 const User = () => {
-  const [refreshData, setRefreshData] = useState(false);
+  const [refreshData, setRefreshData] = useState(false)
+  const [deleteId, setDeleteId] = useState(null)
+
   const { data, loading, error } = useFetch(
     `${getEvn("VITE_API_BASE_URL")}/user/get-all-user`,
-    {
-      method: "get",
-      credentials: "include",
-    },
+    { method: "get", credentials: "include" },
     [refreshData]
-  );
+  )
 
-  const handleDelete = async (id) => {
+  const handleDeleteConfirm = async () => {
     const response = await deleteData(
-      `${getEvn("VITE_API_BASE_URL")}/user/delete/${id}`
-    );
+      `${getEvn("VITE_API_BASE_URL")}/user/delete/${deleteId}`
+    )
     if (response) {
-      setRefreshData(!refreshData);
-      showToast("success", "Data deleted.");
+      setRefreshData(!refreshData)
+      showToast("success", "User deleted.")
     } else {
-      showToast("error", "Data not deleted.");
+      showToast("error", "Could not delete user.")
     }
-  };
+    setDeleteId(null)
+  }
 
-  //   console.log(data);
+  if (loading) return <Loading />
 
-  if (loading) return <Loading />;
   return (
     <div>
+      <ConfirmDialog
+        isOpen={!!deleteId}
+        onClose={() => setDeleteId(null)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete this user?"
+        description="This will permanently remove the user account and cannot be undone."
+      />
+
       <Card>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Role </TableHead>
+                <TableHead>Role</TableHead>
                 <TableHead>Name</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Avatar</TableHead>
@@ -76,15 +81,12 @@ const User = () => {
                         className="w-10 h-10 object-cover rounded-full"
                       />
                     </TableCell>
+                    <TableCell>{moment(user.createdAt).format("DD-MM-YYYY")}</TableCell>
                     <TableCell>
-                      {moment(user.createdAt).format("DD-MM-YYYY")}
-                    </TableCell>
-
-                    <TableCell className="flex gap-3">
                       <Button
-                        onClick={() => handleDelete(user._id)}
+                        onClick={() => setDeleteId(user._id)}
                         variant="outline"
-                        className="hover:bg-violet-500 hover:text-white"
+                        className="hover:bg-red-500 hover:text-white"
                       >
                         <FaRegTrashAlt />
                       </Button>
@@ -93,7 +95,7 @@ const User = () => {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan="3">Data not found.</TableCell>
+                  <TableCell colSpan="6">No users found.</TableCell>
                 </TableRow>
               )}
             </TableBody>
@@ -101,7 +103,7 @@ const User = () => {
         </CardContent>
       </Card>
     </div>
-  );
-};
+  )
+}
 
-export default User;
+export default User
