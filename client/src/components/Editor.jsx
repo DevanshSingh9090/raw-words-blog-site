@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, forwardRef, useImperativeHandle } from 'react';
 import { CKEditor } from '@ckeditor/ckeditor5-react';
 import {
     ClassicEditor,
@@ -71,11 +71,20 @@ import 'ckeditor5/ckeditor5.css';
  */
 const LICENSE_KEY = 'GPL'; // or <YOUR_LICENSE_KEY>.
 
-export default function Editor({ props }) {
+const Editor = forwardRef(function Editor({ props }, ref) {
     const editorContainerRef = useRef(null);
     const editorRef = useRef(null);
     const editorWordCountRef = useRef(null);
+    const editorInstanceRef = useRef(null);
     const [isLayoutReady, setIsLayoutReady] = useState(false);
+
+    useImperativeHandle(ref, () => ({
+        setContent: (content) => {
+            if (editorInstanceRef.current) {
+                editorInstanceRef.current.setData(content);
+            }
+        }
+    }));
 
     useEffect(() => {
         setIsLayoutReady(true);
@@ -303,6 +312,7 @@ export default function Editor({ props }) {
                             <CKEditor
                                 onChange={props.onChange}
                                 onReady={editor => {
+                                    editorInstanceRef.current = editor;
                                     const wordCount = editor.plugins.get('WordCount');
                                     editorWordCountRef.current.appendChild(wordCount.wordCountContainer);
                                 }}
@@ -319,4 +329,6 @@ export default function Editor({ props }) {
             </div>
         </div>
     );
-}
+})
+
+export default Editor
