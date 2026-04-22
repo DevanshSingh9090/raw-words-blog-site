@@ -1,0 +1,8 @@
+JWT_SECRET=BHjJeA1c61mVn09HZ3jTtD6k8K9Kk93o+fMFTPox/Lk=
+FRONTEND_URL=http://localhost:5173
+PORT=3000
+MONGODB_CONN=mongodb+srv://devansh:rawWords123@cluster0.mrt19ft.mongodb.net/raw-words-db?retryWrites=true&w=majority&appName=Cluster0
+NODE_ENV=development
+CLOUDINARY_APP_NAME=deebrqng2
+CLOUDINARY_API_KEY=927485987518665
+CLOUDINARY_API_SECRET=4zqWrKCm93Fk9E0Y5j1WeRK7u4g

@@ -33,13 +33,24 @@ export const updateUser = async (req, res, next) => {
       return next(handleError(404, "User not found."));
     }
 
-    user.name = data.name || user.name;
-    user.email = data.email || user.email;
-    user.bio = data.bio || user.bio;
+    if (data.name) user.name = data.name;
+    if (data.email) user.email = data.email;
+    if (data.bio !== undefined) user.bio = data.bio;
 
-    if (data.password && data.password.length >= 8) {
-      const hashedPassword = bcryptjs.hashSync(data.password, 10);
-      user.password = hashedPassword;
+    if (data.currentPassword || data.newPassword) {
+      if (!data.currentPassword) {
+        return next(handleError(400, "Current password is required to set a new password."));
+      }
+      if (!data.newPassword || data.newPassword.length < 8) {
+        return next(handleError(400, "New password must be at least 8 characters."));
+      }
+
+      const isMatch = bcryptjs.compareSync(data.currentPassword, user.password || "");
+      if (!isMatch) {
+        return next(handleError(400, "Current password is incorrect."));
+      }
+
+      user.password = bcryptjs.hashSync(data.newPassword, 10);
     }
 
     if (req.file) {
