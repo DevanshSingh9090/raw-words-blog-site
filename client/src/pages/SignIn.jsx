@@ -6,7 +6,7 @@ import { z } from 'zod'
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useForm } from "react-hook-form"
 import { Card } from '@/components/ui/card'
-import { RouteIndex, RouteSignUp } from '@/helpers/RouteName'
+import { RouteIndex, RouteSignUp, RouteForgotPassword } from '@/helpers/RouteName'
 import { Link, useNavigate } from 'react-router-dom'
 import { showToast } from '@/helpers/showToast'
 import { getEvn } from '@/helpers/getEnv'
@@ -94,7 +94,12 @@ const SignIn = () => {
                                 name="password"
                                 render={({ field }) => (
                                     <FormItem>
-                                        <FormLabel>Password</FormLabel>
+                                        <div className='flex justify-between items-center'>
+                                            <FormLabel>Password</FormLabel>
+                                            <Link className='text-xs text-blue-500 hover:underline' to={RouteForgotPassword}>
+                                                Forgot password?
+                                            </Link>
+                                        </div>
                                         <FormControl>
                                             <Input type="password" placeholder="Enter your password" {...field} />
                                         </FormControl>

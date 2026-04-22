@@ -53,3 +53,11 @@ export const RouteSearch = (q) => {
 
 export const RouteCommentDetails = '/comments'
 export const RouteUser = '/users'
+export const RouteForgotPassword = '/forgot-password'
+export const RouteResetPassword = (token) => {
+    if (token) {
+        return `/reset-password/${token}`
+    } else {
+        return `/reset-password/:token`
+    }
+}

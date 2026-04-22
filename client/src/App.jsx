@@ -2,10 +2,12 @@ import React from 'react'
 import { Button } from './components/ui/button'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
 import Layout from './Layout/Layout'
-import { RouteAddCategory, RouteBlog, RouteBlogAdd, RouteBlogByCategory, RouteBlogDetails, RouteBlogEdit, RouteCategoryDetails, RouteCommentDetails, RouteEditCategory, RouteIndex, RouteProfile, RouteSearch, RouteSignIn, RouteSignUp, RouteUser } from './helpers/RouteName'
+import { RouteAddCategory, RouteBlog, RouteBlogAdd, RouteBlogByCategory, RouteBlogDetails, RouteBlogEdit, RouteCategoryDetails, RouteCommentDetails, RouteEditCategory, RouteIndex, RouteProfile, RouteSearch, RouteSignIn, RouteSignUp, RouteUser, RouteForgotPassword, RouteResetPassword } from './helpers/RouteName'
 import Index from './pages/Index'
 import SignUp from './pages/SignUp'
 import SignIn from './pages/SignIn'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 import Profile from './pages/Profile'
 import AddCategory from './pages/Category/AddCategory'
 import CategoryDetails from './pages/Category/CategoryDetails'
@@ -54,6 +56,8 @@ const App = () => {
 
         <Route path={RouteSignIn} element={<SignIn />} />
         <Route path={RouteSignUp} element={<SignUp />} />
+        <Route path={RouteForgotPassword} element={<ForgotPassword />} />
+        <Route path={RouteResetPassword()} element={<ResetPassword />} />
       </Routes>
     </BrowserRouter>
   )
